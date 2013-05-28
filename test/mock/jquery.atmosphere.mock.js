@@ -1,9 +1,6 @@
 var $ = $ || {};
 $.atmosphere = {
 	AtmosphereRequest: function () {
-
-	},
-	subscribe: function () {
 		return {
 			onError : function(response) {
 			},
@@ -20,9 +17,14 @@ $.atmosphere = {
 			onTransportFailure : function (reason, request) {
 			},
 			onLocalMessage : function (response) {
-			},
+			}
+		}
+	},
+	subscribe: function (request) {
+		var _request = request;
+		return {
 			push: function(data){
-				this.onMessage({responseBody:data});
+				_request.onMessage({responseBody:data});
 			}
 		}
 	}

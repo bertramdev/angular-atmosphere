@@ -24,7 +24,10 @@ angular.module('ngAtmosphere', [])
 		request.fallbackTransport = 'long-polling';
 
 		function handleResponse(response) {
-			var data = angular.fromJson(response.responseBody);
+			var data = response.responseBody;
+			if (typeof data === 'string'){
+				data = angular.fromJson(data);
+			}
 			if (listeners.hasOwnProperty(data.event)) {
 				angular.forEach(listeners[data.event], function (listener) {
 					listener.fn.call(this, data);
@@ -36,9 +39,9 @@ angular.module('ngAtmosphere', [])
 		return {
 			init: function (url) {
 				request.url = url;
+				request.onMessage = handleResponse;
 				
 				connection = $.atmosphere.subscribe(request);
-				connection.onMessage = handleResponse;
 			},
 			on: function (event, callbackFn) {
 
