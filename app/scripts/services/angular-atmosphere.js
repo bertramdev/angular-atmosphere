@@ -14,22 +14,22 @@ angular.module('ngAtmosphere', [])
 			throw new NoAtmospherePluginError();
 		}
 
+		var debug = false;
 		var listeners = {};
 		var listenerIndex = {};
 
 		var connection;
-		var request = new $.atmosphere.AtmosphereRequest();
-		request.contentType = 'application/json';
-		request.transport = 'websocket';
-		request.fallbackTransport = 'long-polling';
-
+		
 		function handleResponse(response) {
 			var data = response.responseBody;
 			if (typeof data === 'string'){
 				data = angular.fromJson(data);
 			}
-			if (listeners.hasOwnProperty(data.event)) {
-				angular.forEach(listeners[data.event], function (listener) {
+			if (debug){
+				console.log('ngAtmosphere DEBUG: received response from server', data.type, data);
+			}
+			if (listeners.hasOwnProperty(data.type)) {
+				angular.forEach(listeners[data.type], function (listener) {
 					listener.fn.call(this, data);
 				});
 			}
@@ -37,43 +37,61 @@ angular.module('ngAtmosphere', [])
 
 		// Public API here
 		return {
-			init: function (url) {
-				request.url = url;
-				request.onMessage = handleResponse;
-				
-				connection = $.atmosphere.subscribe(request);
+			init: function (requestObj) {
+				if (!connection) {
+					var request = requestObj;
+					request.onMessage = handleResponse;
+					
+					connection = $.atmosphere.subscribe(request);
+					if (debug) {
+						console.log('ngAtmosphere DEBUG: connection made to: ' + connection.getUrl());
+					}
+				}
 			},
-			on: function (event, callbackFn) {
+			on: function (type, callbackFn) {
 
 				var id = Math.random();
 				
-				if (!listeners.hasOwnProperty(event)) {
-					listeners[event] = [];
+				if (!listeners.hasOwnProperty(type)) {
+					listeners[type] = [];
 				}
-				listenerIndex[id] = event;
-				listeners[event].push({id: id, fn: callbackFn});
+				listenerIndex[id] = type;
+				listeners[type].push({id: id, fn: callbackFn});
+
+				if (debug) {
+					console.log('ngAtmosphere DEBUG: added callback to ' + type + ' and given the id of ' + id);
+				}
 
 				return id;
 			},
 			off: function (id) {
-				var event = listenerIndex[id];
-				var eventListeners = listeners[event];
+				var type = listenerIndex[id];
+				var typeListeners = listeners[type];
 				var removed = false;
 
-				for (var i = 0; i < eventListeners.length; i++) {
-					if (eventListeners[i].id === id) {
-						eventListeners.splice(i, 1);
+				for (var i = 0; i < typeListeners.length; i++) {
+					if (typeListeners[i].id === id) {
+						typeListeners.splice(i, 1);
 						delete listenerIndex[id];
 
 						removed = true;
 						break;
 					}
 				}
+				if (debug) {
+					console.log('ngAtmosphere DEBUG: removed callback from ' + type + ' with the id of: ' + id);
+				}
 
 				return removed;
 			},
-			emit: function (event, data) {
-				connection.push(angular.toJson({event: event, data: data}));
+			emit: function (type, data) {
+				if (debug) {
+					console.log('ngAtmosphere DEBUG: sending data with type: ' + type, connection, data);
+				}
+				connection.push(angular.toJson({type: type, data: data}));
+			},
+			debug: function(enable){
+				debug = enable;
 			}
 		};
 	}]);
