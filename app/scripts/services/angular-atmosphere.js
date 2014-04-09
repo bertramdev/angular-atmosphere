@@ -48,6 +48,14 @@ angular.module('ngAtmosphere', [])
 					}
 				}
 			},
+			close: function () {
+				if(connection){
+					if (debug) {
+						console.log('ngAtmosphere DEBUG: unsubscribing to ' + connection.getUrl());
+					}
+					$.atmosphere.unsubscribeUrl(connection.getUrl());
+				}
+			},
 			on: function (type, callbackFn) {
 
 				var id = Math.random();
