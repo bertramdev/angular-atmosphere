@@ -2,17 +2,6 @@
   "name": "angular-atmosphere",
   "version": "0.0.1",
   "dependencies": {
-    "angular-latest": ">=1.0.7",
-    "jquery": ">=2.0.3",
-    "jquery.atmosphere": "~1.0.13",
-    "angular-mocks": ">=1.0.7",
-    "angular-scenario": ">=1.0.7",
-    "es5-shim": ">=2.0.11",
-    "json3": "~3.2.4"
-  },
-  "devDependencies": {
-    "angular-mocks": ">=1.0.5",
-    "angular-scenario": ">=1.0.5"
   },
   "main": "app/scripts/service/angular-atmosphere.js",
   "ignore": [
